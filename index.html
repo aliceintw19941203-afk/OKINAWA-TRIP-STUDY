@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okinawa Journey | 沖繩五日遊</title>
+    <style>
+        /* 這裡是 CSS 樣式區域 - 控制網頁長相 */
+        :root {
+            --primary-color: #0077be; /* 海洋藍 */
+            --accent-color: #f0a500; /* 陽光黃 */
+            --bg-color: #f4f9fd;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .trip-info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        /* 時間軸直線 */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #ddd;
+        }
+
+        .day-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            margin-left: 50px; /* 留出時間軸空間 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .day-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 時間軸圓點 */
+        .day-card::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 25px;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .day-title {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .activity-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .activity-list li::before {
+            content: '✈';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .day-card { margin-left: 30px; }
+            .timeline::before { left: 10px; }
+            .day-card::before { left: -28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>OKINAWA JOURNEY</h1>
+        <p>沖繩五日遊 | 2026 Trip Plan</p>
+    </header>
+
+    <div class="container">
+        <div class="trip-info">
+            <h2>📅 旅行資訊</h2>
+            <p><strong>日期：</strong> 2026/05/20 - 2026/05/24 (暫定)</p>
+            <p><strong>旅客：</strong> 2 人</p>
+            <p style="color: #666; font-size: 0.9em;">(此頁面為測試版本，不含真實訂單個資)</p>
+        </div>
+
+        <div class="timeline">
+            
+            <div class="day-card">
+                <h3 class="day-title">Day 1：抵達那霸 & 國際通</h3>
+                <ul class="activity-list">
+                    <li>10:00 桃園機場起飛 (CI-120)</li>
+                    <li>13:30 抵達那霸機場，領取租車</li>
+                    <li>15:00 飯店 Check-in</li>
+                    <li>17:00 國際通逛街 & 晚餐 (暖暮拉麵)</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <h3 class="day-title">Day 2：北部探險 & 美麗海水族館</h3>
+                <ul class="activity-list">
+                    <li>09:00 出發前往北部</li>
+                    <li>10:30 古宇利島 & 蝦蝦飯</li>
+                    <li>13:30 美麗海水族館 (黑潮之海)</li>
+                    <li>18:00 美國村看夕陽</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <h3 class="day-title">Day 3：潛水體驗 & 中部悠閒</h3>
+                <ul class="activity-list">
+                    <li>09:30 青之洞窟浮潛體驗</li>
+                    <li>12:30 恩納村海景午餐</li>
+                    <li>15:00 萬座毛象鼻岩</li>
+                    <li>19:00 燒肉晚餐</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <h3 class="day-title">Day 4：南部文化巡禮</h3>
+                <ul class="activity-list">
+                    <li>10:00 玉泉洞 & 沖繩世界文化王國</li>
+                    <li>13:00 濱邊茶屋下午茶</li>
+                    <li>16:00 瀨長島 Umikaji Terrace</li>
+                    <li>18:00 還車 & 最後採購</li>
+                </ul>
+            </div>
+
+            <div class="day-card">
+                <h3 class="day-title">Day 5：回程</h3>
+                <ul class="activity-list">
+                    <li>09:00 飯店早餐 & Check-out</li>
+                    <li>10:30 前往那霸機場</li>
+                    <li>13:00 搭機返台</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Okinawa Trip Test Project</p>
+    </footer>
+
+</body>
+</html>
