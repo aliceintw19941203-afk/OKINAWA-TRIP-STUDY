@@ -4,10 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Okinawa Journey | 沖繩五日遊</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM (UMD for simple usage without build step) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Marked.js for Markdown parsing (Stable alternative to react-markdown) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
       body {
         font-family: 'Zen Maru Gothic', sans-serif;
@@ -42,14 +57,13 @@
       .pb-safe {
         padding-bottom: env(safe-area-inset-bottom);
       }
-      /* Utilities */
-      .hidden { display: none !important; }
-      .fade-in { animation: fadeIn 0.3s ease-in-out; }
+      .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
       
-      /* Weather Widget overrides */
-      .weatherwidget-io {
-          pointer-events: none; /* Prevent clicks hijacking */
+      /* Modal Styles */
+      .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
       }
     </style>
 <script type="importmap">
@@ -64,12 +78,622 @@
 }
 </script>
 </head>
-<body class="bg-[#FEFCE8] text-stone-800 overflow-x-hidden min-h-screen flex flex-col">
+<body class="bg-[#FEFCE8] text-stone-800 overflow-x-hidden">
     <div id="root"></div>
-    <!-- Weather Widget Script -->
-    <script>
-    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Data (Hardcoded) ---
+
+        const itineraryData = [
+          {
+            dateLabel: "1/10",
+            dayOfWeek: "(六)",
+            fullDate: "1/10 (週六) 抵達沖繩",
+            items: [
+              { time: "08:10", mode: "飛機", title: "CI120 起飛 (TPE -> OKA)", note: "10:40 抵達沖繩那霸機場", query: "那霸機場", travelTime: "飛行約 90分" },
+              { time: "12:00", mode: "公車/計程車", title: "飯店寄放行李 / 前往市區", note: "住宿：Seven Hotels Naha Miharanosato。建議分坐3台計程車先放行李。", query: "Seven Hotels Naha Miharanosato", link: "https://www.google.com/maps/place/?q=place_id:ChIJh5s7O4Rp5TQR41-VGbNVH5M", travelTime: "約 20分" },
+              { time: "13:00", mode: "步行", title: "牧志公設市場 (午餐)", note: "享用海鮮、沖繩料理", query: "牧志公設市場", travelTime: "約 15分" },
+              { time: "15:00", mode: "單軌/計程車", title: "波上宮 / 波之上海灘", note: "參拜懸崖上的神社", query: "波上宮", travelTime: "約 15分" },
+              { time: "17:00", mode: "單軌/計程車", title: "首里城公園", note: "參觀外圍或欣賞夕陽", query: "首里城公園", travelTime: "約 30分" },
+              { time: "19:30", mode: "步行", title: "國際通 (晚餐/逛街)", note: "晚餐後返回飯店", query: "國際通", travelTime: "約 20分" },
+            ]
+          },
+          {
+            dateLabel: "1/11",
+            dayOfWeek: "(日)",
+            fullDate: "1/11 (週日) 南部觀光",
+            items: [
+              { time: "09:00", mode: "租車自駕", title: "ORIX 取車：旭橋站西店", note: "地點：ORIX Asahibashi Station West。建議搭計程車前往，手續約 1 小時。", query: "ORIX Car Rental Asahibashi Station West", travelTime: "約 10分" },
+              { time: "10:30", mode: "自駕", title: "玉泉洞 / 鐘乳石", note: "沖繩世界文化王國", query: "沖繩世界文化王國 玉泉洞", travelTime: "約 30分" },
+              { time: "13:00", mode: "自駕", title: "瀨長島 (幸福鬆餅)", note: "午餐/下午茶。假日人多，建議一到先抽號碼牌。", query: "瀨長島 Umikaji Terrace", travelTime: "約 30分" },
+              { time: "16:00", mode: "自駕", title: "Aeon Mall Rycom", note: "寶可夢中心、Montbell、超市補貨", query: "Aeon Mall Okinawa Rycom", travelTime: "約 40分" },
+            ]
+          },
+          {
+            dateLabel: "1/12",
+            dayOfWeek: "(一)",
+            fullDate: "1/12 (週一) 中部玩樂",
+            items: [
+              { time: "09:30", mode: "租車自駕", title: "水上活動 or 卡丁車", note: "地點：恩納村或北谷區域", query: "恩納村", travelTime: "約 60分" },
+              { time: "12:30", mode: "自駕", title: "美國村 (American Village)", note: "午餐、拍照、海濱步道", query: "美國村", travelTime: "約 30分" },
+              { time: "17:30", mode: "租車自駕", title: "ORIX 還車：美榮橋站店", note: "地點：ORIX Miebashi Station。還車前請記得加滿油。", query: "ORIX Rent-a-car Miebashi Station", travelTime: "約 40分" },
+              { time: "18:30", mode: "步行", title: "市區逛街 / 飯店休息", note: "美榮橋站離國際通很近，還車後移動方便。", query: "美榮橋站", travelTime: "約 10分" },
+              { time: "19:30", mode: "步行", title: "晚餐：燒肉工房 團", note: "從美榮橋站步行前往餐廳相對便利。", query: "燒肉工房 團 那霸", travelTime: "約 10分" },
+            ]
+          },
+          {
+            dateLabel: "1/13",
+            dayOfWeek: "(二)",
+            fullDate: "1/13 (週二) 北部美麗海",
+            items: [
+              { time: "07:00", mode: "包車", title: "出發往北部", note: "9人包車一日遊。為確保 08:30 抵達水族館，請準時出發。", query: "那霸市", travelTime: "約 90分" },
+              { time: "08:30", mode: "包車", title: "美麗海水族館", note: "詳見攻略！Ocean Blue 指定席、黑潮探險、海豚秀。", query: "沖繩美麗海水族館", travelTime: "抵達", hasStrategy: true },
+              { time: "12:00", mode: "步行", title: "午餐時間", note: "餐車或園區餐廳，順遊海龜館、海牛館。", query: "美麗海水族館", travelTime: "園區內" },
+              { time: "13:00", mode: "步行", title: "館內參觀 / 餵食秀", note: "熱帶魚餵食秀 (13:00/15:30)、深海區。", query: "美麗海水族館", travelTime: "園區內" },
+              { time: "16:00", mode: "包車", title: "古宇利島 / 蝦蝦飯", note: "欣賞古宇利大橋美景、享用早晚餐。", query: "古宇利島", travelTime: "約 30分" },
+              { time: "18:00", mode: "包車", title: "返回那霸市區", note: "包車結束", query: "那霸市", travelTime: "約 90分" },
+              { time: "19:30", mode: "步行", title: "晚餐：鳥貴族 (Torikizoku)", note: "美榮橋店 或 松山店。9人建議分拆 2-3 桌。", query: "鳥貴族 沖繩", travelTime: "約 15分" },
+            ]
+          },
+          {
+            dateLabel: "1/14",
+            dayOfWeek: "(三)",
+            fullDate: "1/14 (週三) 賞鯨與返程",
+            items: [
+              { time: "07:20", mode: "公共交通", title: "退房 & 行李寄放", note: "⚠️ 賞鯨船禁帶行李箱。請將行李帶至 牧志站 或 Saion Square 置物櫃。", query: "Saion Square Okinawa", travelTime: "約 15分" },
+              { time: "07:55", mode: "步行", title: "賞鯨集合", note: "Family Mart (Saion Square) 集合。請準時抵達。", query: "Family Mart Saion Square", travelTime: "約 10分" },
+              { time: "08:30", mode: "船運", title: "出海賞鯨", note: "享受出海樂趣", query: "那霸 泊港", travelTime: "約 15分" },
+              { time: "12:30", mode: "步行", title: "全員會合 / 午餐", note: "賞鯨結束，全員集合用餐", query: "Saion Square", travelTime: "約 10分" },
+              { time: "14:00", mode: "單軌", title: "最後補貨 / 機場移動", note: "拿取寄放行李，前往機場", query: "那霸機場", travelTime: "約 30分" },
+              { time: "~20:50", mode: "飛機", title: "CI123 返台", note: "滿載而歸", query: "那霸機場", travelTime: "約 20分" },
+            ]
+          },
+        ];
+
+        // --- Components ---
+
+        const BackgroundDecorations = () => {
+          return (
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50">
+              {/* Hibiscus Top Right */}
+              <svg className="absolute -right-8 top-10 w-40 h-40 text-rose-300 transform rotate-12" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 50 Q70 20 90 40 Q80 70 50 60 Q20 70 10 40 Q30 20 50 50 Z" opacity="0.6"/>
+                <circle cx="50" cy="50" r="10" fill="#F43F5E"/>
+                <path d="M50 50 L50 20 M50 50 L80 50 M50 50 L50 80 M50 50 L20 50" stroke="#F43F5E" strokeWidth="2"/>
+              </svg>
+              
+              {/* Whale Shark Center Left */}
+              <svg className="absolute -left-10 top-1/3 w-64 h-64 text-blue-200 transform -rotate-12" viewBox="0 0 200 100" fill="currentColor">
+                <path d="M20 50 Q60 20 120 40 Q160 50 180 40 L190 50 L180 60 Q160 50 120 60 Q60 80 20 50 Z" />
+                <circle cx="40" cy="45" r="3" fill="#FFF"/>
+                <circle cx="150" cy="50" r="2" fill="#FFF"/>
+                <circle cx="130" cy="45" r="2" fill="#FFF"/>
+                <circle cx="110" cy="55" r="2" fill="#FFF"/>
+              </svg>
+              
+              {/* Shisa / Lion Dog Bottom Right */}
+              <svg className="absolute -right-4 bottom-24 w-32 h-32 text-orange-200" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M20 80 L80 80 L90 60 Q95 40 70 30 Q50 20 30 30 Q5 40 10 60 Z" />
+                <circle cx="35" cy="50" r="5" fill="#FFF"/>
+                <circle cx="65" cy="50" r="5" fill="#FFF"/>
+                <path d="M35 60 Q50 70 65 60" stroke="#FFF" strokeWidth="3" fill="none"/>
+              </svg>
+              
+              {/* Wave Pattern Bottom */}
+              <svg className="absolute bottom-0 left-0 w-full h-20 text-teal-100/50" preserveAspectRatio="none" viewBox="0 0 1200 120">
+                 <path d="M0,0 C150,60 350,0 600,40 C850,80 1050,20 1200,60 L1200,120 L0,120 Z" fill="currentColor"/>
+              </svg>
+            </div>
+          );
+        };
+
+        const StickerIcon = ({ mode }) => {
+          let content;
+          let bgClass = "bg-white"; 
+          let borderClass = "border-2 border-stone-200";
+
+          if (mode.includes("飛機")) {
+            content = <span className="text-2xl drop-shadow-sm">✈️</span>;
+            bgClass = "bg-sky-100";
+            borderClass = "border-2 border-white ring-2 ring-sky-200";
+          } else if (mode.includes("自駕") || mode.includes("租車") || mode.includes("包車")) {
+            content = <span className="text-2xl drop-shadow-sm">🚗</span>;
+            bgClass = "bg-orange-100";
+            borderClass = "border-2 border-white ring-2 ring-orange-200";
+          } else if (mode.includes("計程車")) {
+            content = <span className="text-2xl drop-shadow-sm">🚕</span>;
+            bgClass = "bg-yellow-100";
+            borderClass = "border-2 border-white ring-2 ring-yellow-200";
+          } else if (mode.includes("單軌") || mode.includes("公車") || mode.includes("公共")) {
+            content = <span className="text-2xl drop-shadow-sm">🚝</span>;
+            bgClass = "bg-indigo-100";
+            borderClass = "border-2 border-white ring-2 ring-indigo-200";
+          } else if (mode.includes("船")) {
+            content = <span className="text-2xl drop-shadow-sm">🛥️</span>;
+            bgClass = "bg-blue-100";
+            borderClass = "border-2 border-white ring-2 ring-blue-200";
+          } else {
+            content = <span className="text-2xl drop-shadow-sm">👣</span>;
+            bgClass = "bg-emerald-100";
+            borderClass = "border-2 border-white ring-2 ring-emerald-200";
+          }
+
+          return (
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform -rotate-6 hover:rotate-6 transition-transform ${bgClass} ${borderClass}`}>
+              {content}
+            </div>
+          );
+        };
+
+        // --- Churaumi Strategy Modal ---
+        const ChuraumiModal = ({ isOpen, onClose }) => {
+          if (!isOpen) return null;
+
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-backdrop animate-fade-in">
+              <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl relative border-4 border-blue-200">
+                <button 
+                  onClick={onClose}
+                  className="absolute top-3 right-3 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full p-2 transition-colors z-10"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                
+                <div className="bg-blue-500 p-6 text-white text-center relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                   <h2 className="text-2xl font-bold serif relative z-10">美麗海最強攻略</h2>
+                   <p className="text-blue-100 text-sm mt-1 relative z-10">Ocean Blue 指定席 + 黑潮探險</p>
+                </div>
+
+                <div className="p-6 space-y-6">
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">09:00</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">抵達 & 衝刺</h4>
+                         <p className="text-sm text-stone-600">入場後直奔 <span className="text-blue-600 font-bold">Ocean Blue 咖啡廳</span> 櫃台預約指定席。</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">09:10</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">入座咖啡廳</h4>
+                         <p className="text-sm text-stone-600">指定席費用 ¥1000 + 低消。使用時間約 40 分鐘。零距離欣賞黑潮之海。</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">09:30</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">鬼蝠魟餵食秀</h4>
+                         <p className="text-sm text-stone-600">一邊喝咖啡一邊欣賞優雅的鬼蝠魟進食。</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">10:00</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">黑潮探險</h4>
+                         <p className="text-sm text-stone-600">離開咖啡廳，前往鯨鯊展區旁專用電梯。從正上方俯瞰大水槽 (至 10:45 結束)。</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">11:30</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">海豚表演</h4>
+                         <p className="text-sm text-stone-600">戶外劇場。離館前務必蓋手章，下午可再次入館。</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4 items-start">
+                      <div className="w-12 text-center font-bold text-blue-600 shrink-0">15:00</div>
+                      <div>
+                         <h4 className="font-bold text-stone-800">鯨鯊餵食秀</h4>
+                         <p className="text-sm text-stone-600">最震撼重頭戲！建議14:50回黑潮之海卡位，或站高處拍「垂直進食」。</p>
+                      </div>
+                   </div>
+
+                   <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-sm text-stone-700">
+                      <span className="font-bold">💡 小貼士：</span> 依照此路線可一次滿足指定席、探險、餵食秀，最順暢！
+                   </div>
+                </div>
+
+                <div className="p-4 border-t border-stone-100 text-center">
+                   <button onClick={onClose} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all">
+                      我知道了！
+                   </button>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const ExpenseTracker = () => {
+          const [members, setMembers] = useState(["阿宏", "小美", "大偉", "Lisa", "Mike", "Jason", "Tina", "Kevin", "Emily"]);
+          const [expenses, setExpenses] = useState([]);
+          const [showAddForm, setShowAddForm] = useState(false);
+          const [editingId, setEditingId] = useState(null);
+
+          const [payer, setPayer] = useState(members[0]);
+          const [description, setDescription] = useState("");
+          const [amount, setAmount] = useState("");
+
+          const handleSaveExpense = () => {
+            if (!description || !amount) return;
+            
+            if (editingId) {
+              setExpenses(expenses.map(e => e.id === editingId ? {
+                ...e,
+                payer,
+                description,
+                amount: parseFloat(amount),
+              } : e));
+            } else {
+              const newExpense = {
+                id: Date.now().toString(),
+                payer,
+                description,
+                amount: parseFloat(amount),
+                date: new Date().toLocaleDateString(),
+              };
+              setExpenses([newExpense, ...expenses]);
+            }
+            
+            resetForm();
+          };
+
+          const handleEdit = (expense) => {
+            setEditingId(expense.id);
+            setPayer(expense.payer);
+            setDescription(expense.description);
+            setAmount(expense.amount.toString());
+            setShowAddForm(true);
+          };
+
+          const handleDelete = (id) => {
+            if (window.confirm("確定要刪除這筆紀錄嗎？")) {
+              setExpenses(expenses.filter(e => e.id !== id));
+              if (editingId === id) {
+                resetForm();
+              }
+            }
+          };
+
+          const resetForm = () => {
+            setDescription("");
+            setAmount("");
+            setEditingId(null);
+            setShowAddForm(false);
+            setPayer(members[0]);
+          };
+
+          const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+          const avgPerPerson = expenses.length > 0 ? totalSpent / members.length : 0;
+
+          const calculateSettlement = () => {
+            if (expenses.length === 0) return [];
+
+            let balances = {};
+            members.forEach(m => balances[m] = 0);
+
+            expenses.forEach(e => {
+              balances[e.payer] += e.amount;
+            });
+            members.forEach(m => {
+              balances[m] -= avgPerPerson;
+            });
+
+            const debtors = [];
+            const creditors = [];
+
+            Object.entries(balances).forEach(([name, val]) => {
+              if (val < -0.01) debtors.push({ name, amount: val });
+              if (val > 0.01) creditors.push({ name, amount: val });
+            });
+
+            debtors.sort((a, b) => a.amount - b.amount);
+            creditors.sort((a, b) => b.amount - a.amount);
+
+            const result = [];
+            let i = 0; 
+            let j = 0; 
+
+            while (i < debtors.length && j < creditors.length) {
+              let debtor = debtors[i];
+              let creditor = creditors[j];
+              
+              let amt = Math.min(Math.abs(debtor.amount), creditor.amount);
+              
+              result.push({ from: debtor.name, to: creditor.name, amount: amt });
+              
+              debtor.amount += amt;
+              creditor.amount -= amt;
+
+              if (Math.abs(debtor.amount) < 0.01) i++;
+              if (creditor.amount < 0.01) j++;
+            }
+
+            return result;
+          };
+
+          const settlement = calculateSettlement();
+
+          return (
+            <div className="px-5 pb-24 pt-6 min-h-screen relative z-10">
+              <div className="bg-[#FFFBEB]/90 backdrop-blur border-2 border-[#78716C] rounded-2xl p-5 mb-6 shadow-[4px_4px_0px_0px_rgba(120,113,108,1)] relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-1">總開銷 Total</h2>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-stone-800 tracking-tighter">¥{totalSpent.toLocaleString()}</span>
+                    <span className="text-xs text-stone-500">({members.length}人均分 ¥{Math.round(avgPerPerson).toLocaleString()})</span>
+                  </div>
+                </div>
+                <div className="absolute right-[-20px] top-[-20px] w-24 h-24 bg-yellow-200 rounded-full opacity-50 blur-xl"></div>
+              </div>
+
+              {!showAddForm && (
+                <button 
+                  onClick={() => { resetForm(); setShowAddForm(true); }}
+                  className="w-full py-3 bg-[#4E342E] text-[#FEFCE8] rounded-xl font-bold shadow-lg active:scale-95 transition-all mb-8 flex items-center justify-center gap-2 border-2 border-transparent hover:bg-[#3E2723]"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  記一筆
+                </button>
+              )}
+
+              {showAddForm && (
+                <div className="bg-white/90 backdrop-blur border-2 border-stone-200 rounded-xl p-4 mb-8 shadow-sm animate-fade-in">
+                  <h3 className="text-sm font-bold text-stone-800 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-yellow-400 rounded-full"></span> 
+                    {editingId ? "編輯支出" : "新增支出"}
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-stone-500 block mb-1">誰付的錢?</label>
+                      <select 
+                        value={payer} 
+                        onChange={(e) => setPayer(e.target.value)}
+                        className="w-full bg-[#FAFAF9] border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-stone-800"
+                      >
+                        {members.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-stone-500 block mb-1">付了什麼?</label>
+                      <input 
+                        type="text" 
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="例如: 午餐, 門票..."
+                        className="w-full bg-[#FAFAF9] border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-stone-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-stone-500 block mb-1">多少錢 (日幣)?</label>
+                      <input 
+                        type="number" 
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0"
+                        className="w-full bg-[#FAFAF9] border border-stone-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-stone-800"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button onClick={resetForm} className="flex-1 py-2 text-stone-500 text-sm font-medium hover:bg-stone-100 rounded-lg">取消</button>
+                      <button onClick={handleSaveExpense} className="flex-1 py-2 bg-yellow-400 text-stone-900 text-sm font-bold rounded-lg shadow-sm hover:bg-yellow-500">
+                        {editingId ? "更新" : "確定"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="serif text-lg font-bold text-[#4E342E] mb-3 border-b-2 border-yellow-200 inline-block">消費紀錄</h3>
+                  {expenses.length === 0 ? (
+                    <div className="text-center py-8 text-stone-400 text-sm bg-white/50 rounded-xl border border-dashed border-stone-300">
+                      還沒有紀錄，開始記帳吧！
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {expenses.map(e => (
+                        <div key={e.id} className="bg-white/90 backdrop-blur rounded-xl p-3 border border-stone-200 flex justify-between items-center shadow-sm group">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 border border-stone-200">
+                              {e.payer.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-stone-800 text-sm">{e.description}</p>
+                              <p className="text-xs text-stone-500">{e.payer} 付款</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            <span className="font-mono font-bold text-stone-800">¥{e.amount.toLocaleString()}</span>
+                            <div className="flex gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={() => handleEdit(e)}
+                                className="p-1.5 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(e.id)}
+                                className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {settlement.length > 0 && (
+                  <div className="pt-4">
+                    <h3 className="serif text-lg font-bold text-stone-700 mb-3 border-b-2 border-teal-200 inline-block">結算建議</h3>
+                    <div className="bg-white/90 backdrop-blur rounded-xl border border-stone-200 overflow-hidden">
+                      {settlement.map((s, idx) => (
+                        <div key={idx} className={`p-4 flex items-center justify-between ${idx !== settlement.length - 1 ? 'border-b border-stone-100' : ''}`}>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="font-bold text-red-500">{s.from}</span>
+                            <span className="text-stone-400">➔</span>
+                            <span className="font-bold text-green-600">{s.to}</span>
+                          </div>
+                          <span className="font-mono font-bold text-stone-800">¥{Math.round(s.amount).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        const App = () => {
+          const [activeTab, setActiveTab] = useState('schedule');
+          const [selectedDay, setSelectedDay] = useState(0);
+          const [showChuraumiModal, setShowChuraumiModal] = useState(false);
+          
+          // Header Image
+          const headerImage = "https://image.pollinations.ai/prompt/beautiful%20okinawa%20beach%20turquoise%20ocean%20cinematic%20lighting?width=1080&height=600&nologo=true";
+
+          return (
+            <div className="max-w-md mx-auto shadow-2xl overflow-hidden relative border-x-2 border-[#E7E5E4] min-h-screen flex flex-col bg-[#FEFCE8]">
+              
+              <BackgroundDecorations />
+
+              {/* Churaumi Modal */}
+              <ChuraumiModal isOpen={showChuraumiModal} onClose={() => setShowChuraumiModal(false)} />
+
+              <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#FEFCE8]/95 backdrop-blur border-t-2 border-[#78716C] flex justify-around pb-safe max-w-md mx-auto">
+                <button 
+                  onClick={() => setActiveTab('schedule')}
+                  className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${activeTab === 'schedule' ? 'text-stone-800' : 'text-stone-400'}`}
+                >
+                  <svg className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-yellow-400 stroke-stone-800' : 'stroke-current fill-none'}`} strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                  <span className="text-[10px] font-bold">行程表</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('wallet')}
+                  className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${activeTab === 'wallet' ? 'text-stone-800' : 'text-stone-400'}`}
+                >
+                  <svg className={`w-6 h-6 ${activeTab === 'wallet' ? 'fill-yellow-400 stroke-stone-800' : 'stroke-current fill-none'}`} strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                  <span className="text-[10px] font-bold">公費分擔</span>
+                </button>
+              </div>
+
+              {activeTab === 'wallet' ? (
+                <ExpenseTracker />
+              ) : (
+                <div className="pb-20 relative z-10">
+                  <div className="relative h-44 bg-stone-300 overflow-hidden rounded-b-[2rem] shadow-lg mb-2 group">
+                    <img 
+                      src={headerImage} 
+                      alt="Okinawa Header" 
+                      className="w-full h-full object-cover opacity-90"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent"></div>
+                    
+                    <div className="absolute bottom-4 left-6 text-white drop-shadow-md">
+                      <h1 className="text-4xl font-bold serif tracking-wide">沖繩五日</h1>
+                      <div className="flex items-center gap-2 mt-1">
+                         <span className="text-yellow-300 text-lg">★</span>
+                         <span className="text-sm font-medium tracking-wider">家族の旅</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="sticky top-0 z-20 pt-2 pb-2">
+                    <div className="flex overflow-x-auto hide-scrollbar px-4 gap-3 snap-x">
+                      {itineraryData.map((day, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedDay(index)}
+                          className={`flex-shrink-0 snap-start flex flex-col items-center justify-center w-16 h-20 py-2 rounded-2xl border-2 transition-all duration-300 ${
+                            selectedDay === index 
+                              ? 'bg-yellow-400 text-stone-900 border-white shadow-lg -translate-y-1 scale-105' 
+                              : 'bg-white/80 text-stone-500 border-white shadow-sm hover:bg-white'
+                          }`}
+                        >
+                          <span className="text-sm font-black">{day.dateLabel}</span>
+                          <span className="text-xs font-medium mb-1">{day.dayOfWeek}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-4">
+                    <div className="mb-6 flex items-center justify-between bg-white/60 backdrop-blur rounded-full px-4 py-2 border border-white shadow-sm">
+                      <h2 className="text-lg font-bold text-stone-700 serif">
+                        {itineraryData[selectedDay].fullDate}
+                      </h2>
+                    </div>
+
+                    <div className="space-y-6 relative">
+                      <div className="absolute left-[27px] top-6 bottom-6 w-0.5 border-l-2 border-dashed border-stone-300/60 z-0"></div>
+
+                      {itineraryData[selectedDay].items.map((item, idx) => (
+                        <div key={idx} className="relative z-10 flex gap-4 group">
+                           {item.travelTime && idx > 0 && (
+                              <div className="absolute left-[16px] -top-5 z-20">
+                                 <span className="text-[10px] font-bold text-stone-400 bg-[#FEFCE8] px-1.5 py-0.5 rounded border border-stone-200/50 whitespace-nowrap shadow-sm">
+                                   ⬇ {item.travelTime}
+                                 </span>
+                              </div>
+                           )}
+
+                          <div className="flex-shrink-0 pt-1">
+                             <StickerIcon mode={item.mode} />
+                          </div>
+
+                          <div className="flex-grow flex flex-col gap-2">
+                            <a 
+                                href={item.link ? item.link : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query + " 沖繩")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="bg-white/90 backdrop-blur rounded-2xl p-4 border-2 border-white shadow-md active:scale-[0.98] transition-all relative overflow-hidden group-hover:border-yellow-200 group-hover:shadow-lg block"
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-black text-stone-600 bg-yellow-100 px-2 py-0.5 rounded-md tracking-wide shadow-sm">{item.time}</span>
+                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">{item.mode}</span>
+                                </div>
+                                <h3 className="text-base font-bold text-stone-800 mb-1 leading-tight group-hover:text-amber-700 transition-colors flex items-center gap-1">
+                                {item.title}
+                                </h3>
+                                <p className="text-sm text-stone-500 leading-relaxed font-normal">{item.note}</p>
+                            </a>
+                            
+                            {/* Strategy Button for Churaumi (Only shows on 1/13 item with hasStrategy flag) */}
+                            {item.hasStrategy && (
+                                <button 
+                                    onClick={() => setShowChuraumiModal(true)}
+                                    className="bg-blue-600 text-white text-sm font-bold py-2 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 animate-pulse hover:animate-none hover:bg-blue-700 transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    查看美麗海最強攻略
+                                </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
-    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
