@@ -5,22 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Okinawa Journey | 沖繩五日遊</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Marked.js for Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
@@ -66,17 +61,6 @@
         backdrop-filter: blur(4px);
       }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0"
-  }
-}
-</script>
 </head>
 <body class="bg-[#FEFCE8] text-stone-800 overflow-x-hidden">
     <div id="root"></div>
@@ -93,7 +77,7 @@
             fullDate: "1/10 (週六) 抵達沖繩",
             items: [
               { time: "08:10", mode: "飛機", title: "CI120 起飛 (TPE -> OKA)", note: "10:40 抵達沖繩那霸機場", query: "那霸機場", travelTime: "飛行約 90分" },
-              { time: "12:00", mode: "公車/計程車", title: "飯店寄放行李 / 前往市區", note: "住宿：Seven Hotels Naha Miharanosato。建議分坐3台計程車先放行李。", query: "Seven Hotels Naha Miharanosato", link: "https://www.google.com/maps/place/?q=place_id:ChIJh5s7O4Rp5TQR41-VGbNVH5M", travelTime: "約 20分" },
+              { time: "12:00", mode: "公車/計程車", title: "飯店寄放行李 / 前往市區", note: "住宿：Seven Hotels Naha Miharanosato。建議分坐3台計程車先放行李。", query: "Seven Hotels Naha Miharanosato", link: "", travelTime: "約 20分" },
               { time: "13:00", mode: "步行", title: "牧志公設市場 (午餐)", note: "享用海鮮、沖繩料理", query: "牧志公設市場", travelTime: "約 15分" },
               { time: "15:00", mode: "單軌/計程車", title: "波上宮 / 波之上海灘", note: "參拜懸崖上的神社", query: "波上宮", travelTime: "約 15分" },
               { time: "17:00", mode: "單軌/計程車", title: "首里城公園", note: "參觀外圍或欣賞夕陽", query: "首里城公園", travelTime: "約 30分" },
@@ -152,8 +136,7 @@
           },
         ];
 
-        // --- Mock Services (Replacements for API) ---
-        // To ensure the app runs without API keys for the viewer
+        // --- Mock Services ---
         const mockGenerateItinerary = async (pref) => {
             return new Promise((resolve) => {
                 setTimeout(() => resolve(`
@@ -170,7 +153,6 @@
 
         const mockGenerateImage = async (prompt) => {
             return new Promise((resolve) => {
-                // Return a placeholder image
                 setTimeout(() => resolve("https://image.pollinations.ai/prompt/cute%20okinawa%20watercolor?width=800&height=600"), 1500);
             });
         };
@@ -180,14 +162,11 @@
         const BackgroundDecorations = () => {
           return (
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50">
-              {/* Hibiscus Top Right */}
               <svg className="absolute -right-8 top-10 w-40 h-40 text-rose-300 transform rotate-12" viewBox="0 0 100 100" fill="currentColor">
                 <path d="M50 50 Q70 20 90 40 Q80 70 50 60 Q20 70 10 40 Q30 20 50 50 Z" opacity="0.6"/>
                 <circle cx="50" cy="50" r="10" fill="#F43F5E"/>
                 <path d="M50 50 L50 20 M50 50 L80 50 M50 50 L50 80 M50 50 L20 50" stroke="#F43F5E" strokeWidth="2"/>
               </svg>
-              
-              {/* Whale Shark Center Left */}
               <svg className="absolute -left-10 top-1/3 w-64 h-64 text-blue-200 transform -rotate-12" viewBox="0 0 200 100" fill="currentColor">
                 <path d="M20 50 Q60 20 120 40 Q160 50 180 40 L190 50 L180 60 Q160 50 120 60 Q60 80 20 50 Z" />
                 <circle cx="40" cy="45" r="3" fill="#FFF"/>
@@ -195,16 +174,12 @@
                 <circle cx="130" cy="45" r="2" fill="#FFF"/>
                 <circle cx="110" cy="55" r="2" fill="#FFF"/>
               </svg>
-              
-              {/* Shisa / Lion Dog Bottom Right */}
               <svg className="absolute -right-4 bottom-24 w-32 h-32 text-orange-200" viewBox="0 0 100 100" fill="currentColor">
                 <path d="M20 80 L80 80 L90 60 Q95 40 70 30 Q50 20 30 30 Q5 40 10 60 Z" />
                 <circle cx="35" cy="50" r="5" fill="#FFF"/>
                 <circle cx="65" cy="50" r="5" fill="#FFF"/>
                 <path d="M35 60 Q50 70 65 60" stroke="#FFF" strokeWidth="3" fill="none"/>
               </svg>
-              
-              {/* Wave Pattern Bottom */}
               <svg className="absolute bottom-0 left-0 w-full h-20 text-teal-100/50" preserveAspectRatio="none" viewBox="0 0 1200 120">
                  <path d="M0,0 C150,60 350,0 600,40 C850,80 1050,20 1200,60 L1200,120 L0,120 Z" fill="currentColor"/>
               </svg>
@@ -250,7 +225,6 @@
           );
         };
 
-        // --- Churaumi Strategy Modal ---
         const ChuraumiModal = ({ isOpen, onClose }) => {
           if (!isOpen) return null;
 
@@ -542,270 +516,4 @@
                                 onClick={() => handleEdit(e)}
                                 className="p-1.5 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(e.id)}
-                                className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {settlement.length > 0 && (
-                  <div className="pt-4">
-                    <h3 className="serif text-lg font-bold text-stone-700 mb-3 border-b-2 border-teal-200 inline-block">結算建議</h3>
-                    <div className="bg-white/90 backdrop-blur rounded-xl border border-stone-200 overflow-hidden">
-                      {settlement.map((s, idx) => (
-                        <div key={idx} className={`p-4 flex items-center justify-between ${idx !== settlement.length - 1 ? 'border-b border-stone-100' : ''}`}>
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="font-bold text-red-500">{s.from}</span>
-                            <span className="text-stone-400">➔</span>
-                            <span className="font-bold text-green-600">{s.to}</span>
-                          </div>
-                          <span className="font-mono font-bold text-stone-800">¥{Math.round(s.amount).toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        };
-
-        const App = () => {
-          const [activeTab, setActiveTab] = useState('schedule');
-          const [selectedDay, setSelectedDay] = useState(0);
-          
-          // AI State
-          const [question, setQuestion] = useState("");
-          const [answer, setAnswer] = useState("");
-          const [aiLoading, setAiLoading] = useState(false);
-          const [groundingChunks, setGroundingChunks] = useState([]);
-
-          // Header Image State
-          const [headerImage, setHeaderImage] = useState("https://image.pollinations.ai/prompt/beautiful%20okinawa%20beach%20turquoise%20ocean%20cinematic%20lighting?width=1080&height=600&nologo=true");
-          const [isGeneratingCover, setIsGeneratingCover] = useState(false);
-          const [showChuraumiModal, setShowChuraumiModal] = useState(false);
-
-          const handleAskAI = async () => {
-            if (!question.trim()) return;
-            setAiLoading(true);
-            setAnswer("");
-            setGroundingChunks([]);
-
-            try {
-              // Use Mock Service
-              const text = await mockGenerateItinerary(question);
-              setAnswer(text);
-            } catch (e) {
-              setAnswer("抱歉，目前無法回答您的問題。");
-            } finally {
-              setAiLoading(false);
-            }
-          };
-
-          const handleGenerateCover = async () => {
-            setIsGeneratingCover(true);
-            try {
-              const image = await mockGenerateImage("okinawa");
-              setHeaderImage(image);
-            } catch (error) {
-              console.error("Failed to generate cover", error);
-              alert("無法生成圖片");
-            } finally {
-              setIsGeneratingCover(false);
-            }
-          };
-
-          return (
-            <div className="max-w-md mx-auto shadow-2xl overflow-hidden relative border-x-2 border-[#E7E5E4] min-h-screen flex flex-col bg-[#FEFCE8]">
-              
-              <BackgroundDecorations />
-              
-              {/* Churaumi Modal */}
-              <ChuraumiModal isOpen={showChuraumiModal} onClose={() => setShowChuraumiModal(false)} />
-
-              <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#FEFCE8]/95 backdrop-blur border-t-2 border-[#78716C] flex justify-around pb-safe max-w-md mx-auto">
-                <button 
-                  onClick={() => setActiveTab('schedule')}
-                  className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${activeTab === 'schedule' ? 'text-stone-800' : 'text-stone-400'}`}
-                >
-                  <svg className={`w-6 h-6 ${activeTab === 'schedule' ? 'fill-yellow-400 stroke-stone-800' : 'stroke-current fill-none'}`} strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-                  <span className="text-[10px] font-bold">行程表</span>
-                </button>
-                <button 
-                  onClick={() => setActiveTab('wallet')}
-                  className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${activeTab === 'wallet' ? 'text-stone-800' : 'text-stone-400'}`}
-                >
-                  <svg className={`w-6 h-6 ${activeTab === 'wallet' ? 'fill-yellow-400 stroke-stone-800' : 'stroke-current fill-none'}`} strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                  <span className="text-[10px] font-bold">公費分擔</span>
-                </button>
-              </div>
-
-              {activeTab === 'wallet' ? (
-                <ExpenseTracker />
-              ) : (
-                <div className="pb-20 relative z-10">
-                  <div className="relative h-44 bg-stone-300 overflow-hidden rounded-b-[2rem] shadow-lg mb-2 group">
-                    <img 
-                      src={headerImage} 
-                      alt="Okinawa Header" 
-                      className={`w-full h-full object-cover opacity-90 transition-opacity duration-700 ${isGeneratingCover ? 'opacity-50 blur-sm' : ''}`}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent"></div>
-                    
-                    <button 
-                      onClick={handleGenerateCover}
-                      disabled={isGeneratingCover}
-                      className="absolute top-3 right-3 bg-white/30 backdrop-blur hover:bg-white/50 text-white p-2 rounded-full border border-white/50 shadow-sm transition-all active:scale-95"
-                      title="生成 AI 手繪封面"
-                    >
-                      {isGeneratingCover ? (
-                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                      )}
-                    </button>
-
-                    <div className="absolute bottom-4 left-6 text-white drop-shadow-md">
-                      <h1 className="text-4xl font-bold serif tracking-wide">沖繩五日</h1>
-                      <div className="flex items-center gap-2 mt-1">
-                         <span className="text-yellow-300 text-lg">★</span>
-                         <span className="text-sm font-medium tracking-wider">家族の旅</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="sticky top-0 z-20 pt-2 pb-2">
-                    <div className="flex overflow-x-auto hide-scrollbar px-4 gap-3 snap-x">
-                      {itineraryData.map((day, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedDay(index)}
-                          className={`flex-shrink-0 snap-start flex flex-col items-center justify-center w-16 h-20 py-2 rounded-2xl border-2 transition-all duration-300 ${
-                            selectedDay === index 
-                              ? 'bg-yellow-400 text-stone-900 border-white shadow-lg -translate-y-1 scale-105' 
-                              : 'bg-white/80 text-stone-500 border-white shadow-sm hover:bg-white'
-                          }`}
-                        >
-                          <span className="text-sm font-black">{day.dateLabel}</span>
-                          <span className="text-xs font-medium mb-1">{day.dayOfWeek}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="px-4 py-4">
-                    <div className="mb-6 flex items-center justify-between bg-white/60 backdrop-blur rounded-full px-4 py-2 border border-white shadow-sm">
-                      <h2 className="text-lg font-bold text-stone-700 serif">
-                        {itineraryData[selectedDay].fullDate}
-                      </h2>
-                    </div>
-
-                    <div className="space-y-6 relative">
-                      <div className="absolute left-[27px] top-6 bottom-6 w-0.5 border-l-2 border-dashed border-stone-300/60 z-0"></div>
-
-                      {itineraryData[selectedDay].items.map((item, idx) => (
-                        <div key={idx} className="relative z-10 flex gap-4 group">
-                           {item.travelTime && idx > 0 && (
-                              <div className="absolute left-[16px] -top-5 z-20">
-                                 <span className="text-[10px] font-bold text-stone-400 bg-[#FEFCE8] px-1.5 py-0.5 rounded border border-stone-200/50 whitespace-nowrap shadow-sm">
-                                   ⬇ {item.travelTime}
-                                 </span>
-                              </div>
-                           )}
-
-                          <div className="flex-shrink-0 pt-1">
-                             <StickerIcon mode={item.mode} />
-                          </div>
-
-                          <div className="flex-grow flex flex-col gap-2">
-                            <a 
-                                href={item.link ? item.link : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query + " 沖繩")}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="bg-white/90 backdrop-blur rounded-2xl p-4 border-2 border-white shadow-md active:scale-[0.98] transition-all relative overflow-hidden group-hover:border-yellow-200 group-hover:shadow-lg block"
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                <span className="text-xs font-black text-stone-600 bg-yellow-100 px-2 py-0.5 rounded-md tracking-wide shadow-sm">{item.time}</span>
-                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">{item.mode}</span>
-                                </div>
-                                <h3 className="text-base font-bold text-stone-800 mb-1 leading-tight group-hover:text-amber-700 transition-colors flex items-center gap-1">
-                                {item.title}
-                                </h3>
-                                <p className="text-sm text-stone-500 leading-relaxed font-normal">{item.note}</p>
-                            </a>
-                            
-                            {item.hasStrategy && (
-                                <button 
-                                    onClick={() => setShowChuraumiModal(true)}
-                                    className="bg-blue-600 text-white text-sm font-bold py-2 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 animate-pulse hover:animate-none hover:bg-blue-700 transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    查看美麗海最強攻略
-                                </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="px-5 py-8 mt-4">
-                     <div className="bg-[#FFFBEB]/90 backdrop-blur rounded-3xl p-5 border-2 border-[#E7E5E4] shadow-lg relative overflow-hidden">
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-yellow-200 rounded-full opacity-50"></div>
-
-                        <h3 className="serif text-lg font-bold text-stone-700 mb-4 flex items-center gap-2 relative z-10">
-                          <span className="bg-stone-800 text-white rounded-lg p-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                          </span>
-                          沖繩小幫手
-                        </h3>
-                        
-                        <div className="bg-white/80 rounded-2xl p-4 border border-stone-100 shadow-inner mb-4 relative z-10">
-                          {answer ? (
-                            <div className="prose prose-stone prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: marked.parse(answer) }} />
-                          ) : (
-                            <div className="flex gap-2">
-                              <input 
-                                type="text" 
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                placeholder="問問天氣、推薦伴手禮..."
-                                className="flex-grow bg-[#FAFAF9] border border-stone-300 rounded-xl px-3 py-2 text-sm focus:border-stone-800 outline-none transition-colors"
-                                onKeyDown={(e) => e.key === 'Enter' && handleAskAI()}
-                              />
-                              <button 
-                                onClick={handleAskAI}
-                                disabled={aiLoading}
-                                className="bg-yellow-400 hover:bg-yellow-500 text-stone-900 px-4 py-2 rounded-xl text-lg font-bold shadow-sm disabled:opacity-50 transition-colors"
-                              >
-                                {aiLoading ? '...' : 'Go'}
-                              </button>
-                            </div>
-                          )}
-                          {answer && (
-                              <button onClick={() => { setAnswer(""); setQuestion(""); }} className="text-xs text-amber-600 font-bold underline mt-3 block text-right">問其他問題</button>
-                          )}
-                        </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2
