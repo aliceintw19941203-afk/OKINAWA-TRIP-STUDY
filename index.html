@@ -51,37 +51,31 @@
         const { useState, useEffect } = React;
 
         // ==========================================
-        // ⚠️⚠️⚠️ 請在這裡貼上您的 Firebase 設定 ⚠️⚠️⚠️
+        // 1. 設定檔 (已修正語法並填入您的資料)
         // ==========================================
         const firebaseConfig = {
-          apiKey: "請替換成您的apiKey",
-          authDomain: "請替換成您的authDomain",
-          databaseURL: "請替換成您的databaseURL",
-          projectId: "請替換成您的projectId",
-          storageBucket: "請替換成您的storageBucket",
-          messagingSenderId: "請替換成您的messagingSenderId",
-          appId: "請替換成您的appId"
+          apiKey: "AIzaSyCLAO8ebWjR-LVht4ogVJ8cWz_Sxxn8nm8",
+          authDomain: "okinawa-test-80ac2.firebaseapp.com",
+          databaseURL: "https://okinawa-test-80ac2-default-rtdb.firebaseio.com",
+          projectId: "okinawa-test-80ac2",
+          storageBucket: "okinawa-test-80ac2.firebasestorage.app",
+          messagingSenderId: "29557355544",
+          appId: "1:29557355544:web:bc489e0c59029b0fe63f6d",
+          measurementId: "G-MB46NWT63H"
         };
-        // ==========================================
 
-        // 初始化 Firebase
+        // ==========================================
+        // 2. 初始化 Firebase
+        // ==========================================
         let db;
         try {
             if (!firebase.apps.length) {
-                firebase.initializeApp(const firebaseConfig = {
-  apiKey: "AIzaSyCLAO8ebWjR-LVht4ogVJ8cWz_Sxxn8nm8",
-  authDomain: "okinawa-test-80ac2.firebaseapp.com",
-  databaseURL: "https://okinawa-test-80ac2-default-rtdb.firebaseio.com",
-  projectId: "okinawa-test-80ac2",
-  storageBucket: "okinawa-test-80ac2.firebasestorage.app",
-  messagingSenderId: "29557355544",
-  appId: "1:29557355544:web:bc489e0c59029b0fe63f6d",
-  measurementId: "G-MB46NWT63H"
-};);
+                firebase.initializeApp(firebaseConfig);
             }
             db = firebase.database();
         } catch (error) {
             console.error("Firebase 初始化失敗，請檢查設定檔", error);
+            alert("資料庫連線失敗，請檢查 Console");
         }
 
         // --- 行程資料 ---
@@ -324,7 +318,7 @@
         };
 
         const ExpenseTracker = () => {
-          const [members, setMembers] = useState(["阿宏", "小美", "大偉", "Lisa", "Mike", "Jason", "Tina", "Kevin", "Emily"]);
+          const [members, setMembers] = useState(["阿賢", "小展", "珍珍", "阿娟", "羽子", "喬子", "強羅", "賽伯", "阿峰"]);
           
           const [expenses, setExpenses] = useState([]);
           const [showAddForm, setShowAddForm] = useState(false);
@@ -744,7 +738,7 @@
 
                           <div className="flex-grow flex flex-col gap-2">
                             <a 
-                                href={item.link ? item.link : `http://googleusercontent.com/maps.google.com/9{encodeURIComponent(item.query + " 沖繩")}`}
+                                href={item.link ? item.link : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query + " 沖繩")}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="bg-white/90 backdrop-blur rounded-2xl p-4 border-2 border-white shadow-md active:scale-[0.98] transition-all relative overflow-hidden group-hover:border-yellow-200 group-hover:shadow-lg block"
