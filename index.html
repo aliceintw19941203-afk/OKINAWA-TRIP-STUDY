@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Okinawa Journey | 沖繩五日遊</title>
+    <title>Okinawa Journey | 沖繩五日遊 (雲端同步版)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -14,6 +14,9 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -21,8 +24,8 @@
     <style>
       body {
         font-family: 'Zen Maru Gothic', sans-serif;
-        background-color: #FEFCE8; /* Rice Yellow */
-        color: #57534E; /* Stone 600 */
+        background-color: #FEFCE8;
+        color: #57534E;
         background-image: radial-gradient(#E5E0D8 1px, transparent 1px);
         background-size: 20px 20px;
         -webkit-tap-highlight-color: transparent;
@@ -30,36 +33,15 @@
       h1, h2, h3, h4, .serif {
         font-family: 'Shippori Mincho', serif;
       }
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #D6D3D1; 
-        border-radius: 3px;
-      }
-      .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .pb-safe {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #D6D3D1; border-radius: 3px; }
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
       .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-      
-      /* Modal Styles */
-      .modal-backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-      }
+      .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="bg-[#FEFCE8] text-stone-800 overflow-x-hidden">
@@ -68,8 +50,41 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Data (Hardcoded) ---
+        // ==========================================
+        // ⚠️⚠️⚠️ 請在這裡貼上您的 Firebase 設定 ⚠️⚠️⚠️
+        // ==========================================
+        const firebaseConfig = {
+          apiKey: "請替換成您的apiKey",
+          authDomain: "請替換成您的authDomain",
+          databaseURL: "請替換成您的databaseURL",
+          projectId: "請替換成您的projectId",
+          storageBucket: "請替換成您的storageBucket",
+          messagingSenderId: "請替換成您的messagingSenderId",
+          appId: "請替換成您的appId"
+        };
+        // ==========================================
 
+        // 初始化 Firebase
+        let db;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(const firebaseConfig = {
+  apiKey: "AIzaSyCLAO8ebWjR-LVht4ogVJ8cWz_Sxxn8nm8",
+  authDomain: "okinawa-test-80ac2.firebaseapp.com",
+  databaseURL: "https://okinawa-test-80ac2-default-rtdb.firebaseio.com",
+  projectId: "okinawa-test-80ac2",
+  storageBucket: "okinawa-test-80ac2.firebasestorage.app",
+  messagingSenderId: "29557355544",
+  appId: "1:29557355544:web:bc489e0c59029b0fe63f6d",
+  measurementId: "G-MB46NWT63H"
+};);
+            }
+            db = firebase.database();
+        } catch (error) {
+            console.error("Firebase 初始化失敗，請檢查設定檔", error);
+        }
+
+        // --- 行程資料 ---
         const itineraryData = [
           {
             dateLabel: "1/10",
@@ -311,26 +326,7 @@
         const ExpenseTracker = () => {
           const [members, setMembers] = useState(["阿宏", "小美", "大偉", "Lisa", "Mike", "Jason", "Tina", "Kevin", "Emily"]);
           
-          // --- 1. 初始化：從 LocalStorage 讀取資料 ---
-          const [expenses, setExpenses] = useState(() => {
-            try {
-              const saved = localStorage.getItem("okinawa_expenses");
-              return saved ? JSON.parse(saved) : [];
-            } catch (e) {
-              console.error("讀取存檔失敗", e);
-              return [];
-            }
-          });
-
-          // --- 2. 監聽變動：當 expenses 改變時自動存入 LocalStorage ---
-          useEffect(() => {
-            try {
-              localStorage.setItem("okinawa_expenses", JSON.stringify(expenses));
-            } catch (e) {
-              console.error("存檔失敗", e);
-            }
-          }, [expenses]);
-
+          const [expenses, setExpenses] = useState([]);
           const [showAddForm, setShowAddForm] = useState(false);
           const [editingId, setEditingId] = useState(null);
 
@@ -338,25 +334,53 @@
           const [description, setDescription] = useState("");
           const [amount, setAmount] = useState("");
 
+          // --- 雲端同步核心邏輯 ---
+          useEffect(() => {
+            if (!db) return; // 如果沒有初始化資料庫，就不執行
+
+            const expensesRef = db.ref('expenses');
+            
+            const handleData = (snapshot) => {
+              const data = snapshot.val();
+              if (data) {
+                const loadedExpenses = Object.entries(data).map(([key, value]) => ({
+                  id: key, 
+                  ...value
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                setExpenses(loadedExpenses);
+              } else {
+                setExpenses([]);
+              }
+            };
+
+            expensesRef.on('value', handleData);
+
+            return () => {
+              expensesRef.off('value', handleData);
+            };
+          }, []);
+
           const handleSaveExpense = () => {
             if (!description || !amount) return;
-            
+            if (!db) { alert("請先設定 Firebase Config 才能儲存！"); return; }
+
             if (editingId) {
-              setExpenses(expenses.map(e => e.id === editingId ? {
-                ...e,
+              // 更新
+              db.ref('expenses/' + editingId).update({
                 payer,
                 description,
-                amount: parseFloat(amount),
-              } : e));
+                amount: parseFloat(amount)
+              }).catch(err => alert("更新失敗: " + err.message));
             } else {
-              const newExpense = {
-                id: Date.now().toString(),
+              // 新增
+              const newRef = db.ref('expenses').push();
+              newRef.set({
                 payer,
                 description,
                 amount: parseFloat(amount),
                 date: new Date().toLocaleDateString(),
-              };
-              setExpenses([newExpense, ...expenses]);
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+              }).catch(err => alert("新增失敗: " + err.message));
             }
             
             resetForm();
@@ -371,8 +395,10 @@
           };
 
           const handleDelete = (id) => {
+            if (!db) return;
             if (window.confirm("確定要刪除這筆紀錄嗎？")) {
-              setExpenses(expenses.filter(e => e.id !== id));
+              db.ref('expenses/' + id).remove().catch(err => alert("刪除失敗: " + err.message));
+              
               if (editingId === id) {
                 resetForm();
               }
@@ -439,8 +465,9 @@
           const settlement = calculateSettlement();
 
           return (
-            <div className="px-5 pb-24 pt-6 min-h-screen relative z-10">
-              <div className="bg-[#FFFBEB]/90 backdrop-blur border-2 border-[#78716C] rounded-2xl p-5 mb-6 shadow-[4px_4px_0px_0px_rgba(120,113,108,1)] relative overflow-hidden">
+             <div className="px-5 pb-24 pt-6 min-h-screen relative z-10">
+               {/* 總開銷顯示 */}
+               <div className="bg-[#FFFBEB]/90 backdrop-blur border-2 border-[#78716C] rounded-2xl p-5 mb-6 shadow-[4px_4px_0px_0px_rgba(120,113,108,1)] relative overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-1">總開銷 Total</h2>
                   <div className="flex items-baseline gap-2">
@@ -457,7 +484,7 @@
                   className="w-full py-3 bg-[#4E342E] text-[#FEFCE8] rounded-xl font-bold shadow-lg active:scale-95 transition-all mb-8 flex items-center justify-center gap-2 border-2 border-transparent hover:bg-[#3E2723]"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  記一筆
+                  記一筆 (同步中)
                 </button>
               )}
 
@@ -513,7 +540,7 @@
                   <h3 className="serif text-lg font-bold text-[#4E342E] mb-3 border-b-2 border-yellow-200 inline-block">消費紀錄</h3>
                   {expenses.length === 0 ? (
                     <div className="text-center py-8 text-stone-400 text-sm bg-white/50 rounded-xl border border-dashed border-stone-300">
-                      還沒有紀錄，開始記帳吧！
+                      目前沒有紀錄 (或正在同步中...)
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -570,7 +597,7 @@
                   </div>
                 )}
               </div>
-            </div>
+             </div>
           );
         };
 
@@ -578,12 +605,10 @@
           const [activeTab, setActiveTab] = useState('schedule');
           const [selectedDay, setSelectedDay] = useState(0);
           
-          // AI State
           const [question, setQuestion] = useState("");
           const [answer, setAnswer] = useState("");
           const [aiLoading, setAiLoading] = useState(false);
           
-          // Header Image State
           const [headerImage, setHeaderImage] = useState("https://image.pollinations.ai/prompt/beautiful%20okinawa%20beach%20turquoise%20ocean%20cinematic%20lighting?width=1080&height=600&nologo=true");
           const [isGeneratingCover, setIsGeneratingCover] = useState(false);
           const [showChuraumiModal, setShowChuraumiModal] = useState(false);
@@ -594,7 +619,6 @@
             setAnswer("");
 
             try {
-              // Use Mock Service
               const text = await mockGenerateItinerary(question);
               setAnswer(text);
             } catch (e) {
@@ -622,7 +646,6 @@
               
               <BackgroundDecorations />
               
-              {/* Churaumi Modal */}
               <ChuraumiModal isOpen={showChuraumiModal} onClose={() => setShowChuraumiModal(false)} />
 
               <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#FEFCE8]/95 backdrop-blur border-t-2 border-[#78716C] flex justify-around pb-safe max-w-md mx-auto">
@@ -721,7 +744,7 @@
 
                           <div className="flex-grow flex flex-col gap-2">
                             <a 
-                                href={item.link ? item.link : `https://www.google.com/maps/search/?api=1&query=$?query=${encodeURIComponent(item.query + " 沖繩")}`}
+                                href={item.link ? item.link : `http://googleusercontent.com/maps.google.com/9{encodeURIComponent(item.query + " 沖繩")}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="bg-white/90 backdrop-blur rounded-2xl p-4 border-2 border-white shadow-md active:scale-[0.98] transition-all relative overflow-hidden group-hover:border-yellow-200 group-hover:shadow-lg block"
